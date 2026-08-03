@@ -1,0 +1,23 @@
+# Project-level configuration.
+#
+# TODO(WRDS): Fill in real values once WRDS access is provisioned and the
+# research design is finalized against actual data. Nothing below should be
+# treated as a finalized research decision — these are structural placeholders.
+
+project:
+  name: equity-ml
+  random_seed: 42
+
+paths:
+  data_raw: data/raw
+  data_interim: data/interim
+  data_processed: data/processed
+  reports: reports
+
+# TODO(WRDS): Define sample period, universe filters (e.g. exchange, share
+# code), and rebalance frequency once the research design is finalized.
+research:
+  start_date: null
+  end_date: null
+  universe: null
+  rebalance_frequency: null

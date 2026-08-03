@@ -1,0 +1,27 @@
+# WRDS data source configuration.
+#
+# STATUS: WRDS data has NOT been downloaded yet. Everything below is a
+# structural placeholder — no table or field names are confirmed.
+#
+# TODO(WRDS): Confirm exact WRDS library/table names once access is
+# provisioned and the target datasets are known.
+#
+# Never hardcode credentials in this file. Set WRDS_USERNAME in a local
+# .env file (see .env.example) and let the `wrds` package handle
+# authentication via a .pgpass entry or interactive prompt.
+
+wrds:
+  username_env_var: WRDS_USERNAME
+  # TODO(WRDS): e.g. crsp, comp, ibes — confirm against the actual WRDS
+  # subscription before use.
+  libraries: []
+
+# TODO(WRDS): Add one entry per dataset once schemas are confirmed against
+# real WRDS access, for example:
+#
+# datasets:
+#   crsp_monthly_stock_file:
+#     library: TODO
+#     table: TODO
+#     description: "TODO: confirm fields and coverage against actual WRDS access"
+datasets: {}
