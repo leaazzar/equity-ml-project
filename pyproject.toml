@@ -5,13 +5,13 @@ build-backend = "hatchling.build"
 [project]
 name = "equity-ml"
 version = "0.1.0"
-description = "Quantitative equity research pipeline (infrastructure phase; WRDS data not yet integrated)."
+description = "Point-in-time WRDS equity research pipeline: data integration, feature engineering, purged/embargoed walk-forward modeling, and backtesting."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "Proprietary" }
+license = { text = "MIT" }
 authors = [{ name = "Lea Azar", email = "lea.g.azar1@gmail.com" }]
 classifiers = [
-    "Private :: Do Not Upload",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]

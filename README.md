@@ -284,6 +284,13 @@ narrative.
   remain placeholders (`TODO(WRDS)`) for automating *future* WRDS pulls —
   the current raw files were provided directly, not downloaded by this repo.
 
+## License
+
+MIT — see `LICENSE`. That covers the source code in this repository only;
+it grants no rights to CRSP/Compustat/CCM data, which are licensed WRDS
+products this repository never contains or distributes (see
+`data/README.md`).
+
 ## Authorship
 
 See `CLAUDE.md` for this repository's authorship and git conventions.
