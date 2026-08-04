@@ -36,12 +36,14 @@ def _grouped_rolling(
 ) -> pd.Series:
     """`series.groupby(permno).rolling(window, min_periods).<op>()`, realigned to `series.index`."""
     grouped = getattr(series.groupby(permno).rolling(window, min_periods=min_periods), op)()
-    return grouped.reset_index(level=0, drop=True).reindex(series.index)
+    result: pd.Series = grouped.reset_index(level=0, drop=True).reindex(series.index)
+    return result
 
 
 def _cumulative_return(log_ret: pd.Series, permno: pd.Series, window: int) -> pd.Series:
     rolling_sum = _grouped_rolling(log_ret, permno, window, window, "sum")
-    return np.expm1(rolling_sum)
+    result: pd.Series = np.expm1(rolling_sum)
+    return result
 
 
 def compute_momentum_reversal_features(
@@ -157,7 +159,7 @@ def _rolling_beta_and_idio_vol(
 
     beta = (cov_xy / var_x.where(var_x > 0)).replace([np.inf, -np.inf], np.nan)
     idio_var = (var_y - beta**2 * var_x).clip(lower=0)
-    idio_vol = np.sqrt(idio_var)
+    idio_vol = idio_var.pow(0.5)
 
     return beta, idio_vol
 

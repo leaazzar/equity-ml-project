@@ -44,13 +44,15 @@ def missingness_report(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
 def coverage_by_year(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     year = df["MthCalDt"].dt.year
     present_cols = [c for c in columns if c in df.columns]
-    return df.groupby(year)[present_cols].apply(lambda g: g.notna().mean() * 100)
+    result: pd.DataFrame = df.groupby(year)[present_cols].apply(lambda g: g.notna().mean() * 100)
+    return result
 
 
 def coverage_by_month(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     month = df["MthCalDt"].dt.to_period("M").astype(str)
     present_cols = [c for c in columns if c in df.columns]
-    return df.groupby(month)[present_cols].apply(lambda g: g.notna().mean() * 100)
+    result: pd.DataFrame = df.groupby(month)[present_cols].apply(lambda g: g.notna().mean() * 100)
+    return result
 
 
 def summary_distributions(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:

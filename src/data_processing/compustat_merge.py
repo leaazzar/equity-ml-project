@@ -44,7 +44,8 @@ def compustat_value_columns(compustat: pd.DataFrame) -> list[str]:
 
 def _month_ordinal(dates: pd.Series) -> pd.Series:
     """Integer month index (consecutive across years) for exact month-count arithmetic."""
-    return dates.dt.to_period("M").astype("int64")
+    result: pd.Series = dates.dt.to_period("M").astype("int64")
+    return result
 
 
 def merge_compustat_point_in_time(

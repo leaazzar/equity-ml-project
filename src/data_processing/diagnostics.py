@@ -55,7 +55,7 @@ def compute_firm_coverage_by_year(panel: pd.DataFrame) -> list[dict[str, object]
         with_compustat = grp.loc[has_compustat.loc[grp.index], "PERMNO"]
         rows.append(
             {
-                "year": int(year),
+                "year": int(year),  # type: ignore[arg-type]
                 "n_permno": int(grp["PERMNO"].nunique()),
                 "n_permno_with_gvkey": int(with_gvkey.nunique()),
                 "n_permno_with_compustat": int(with_compustat.nunique()),
