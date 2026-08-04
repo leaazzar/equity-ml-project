@@ -1,5 +1,6 @@
-"""Model training and evaluation.
+"""Walk-forward model training and evaluation.
 
-TODO(WRDS): Implement model pipelines once labeled, feature-engineered data
-derived from WRDS is available. No modeling logic exists yet.
+See `MODEL_DESIGN.md` for the design and `MODEL_REPORT.md` for the first
+real run's results. `pipeline.run_pipeline` is the end-to-end entry point;
+`scripts/run_modeling.py` / `python -m equity_ml.models` wrap it as a CLI.
 """
