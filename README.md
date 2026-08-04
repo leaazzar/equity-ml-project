@@ -1,19 +1,30 @@
 # equity-ml
 
-Quantitative equity research pipeline built on WRDS data (CRSP / Compustat /
-IBES, exact sources TBD).
+A quantitative equity research pipeline built end to end on WRDS data (CRSP
+monthly stock/delisting files, the CRSP/Compustat Merged link table,
+Compustat annual fundamentals, and Fama-French factors — see
+`DATA_DICTIONARY.md` for the exact datasets): point-in-time data
+integration, 51 firm-characteristic features, purged/embargoed walk-forward
+model training, and long/short backtesting, each phase's decisions and
+findings documented as they were made.
 
 ## Status
 
-**Point-in-time feature engineering phase.** Raw WRDS extracts have been
-validated (`src/data_validation/`, see `DATA_DICTIONARY.md`) and merged into
-a point-in-time-correct security-month panel (`src/data_processing/`, see
-`MERGE_REPORT.md`). 51 point-in-time firm characteristics have been built
-from that panel (`src/feature_engineering/`, see `FEATURE_DICTIONARY.md`),
-in two layers: `data/processed/features_raw.parquet` (interpretable units)
-and `data/processed/features_model_ready.parquet` (winsorized + cross-
-sectionally rank-normalized). **Modeling has not started** — see `PLAN.md`
-and `TASKS.md` for what's next.
+**Modeling and backtesting phase — first pass complete.** Raw WRDS extracts
+have been validated (`src/data_validation/`, see `DATA_DICTIONARY.md`) and
+merged into a point-in-time-correct security-month panel
+(`src/data_processing/`, see `MERGE_REPORT.md`). 51 point-in-time firm
+characteristics have been built from that panel (`src/feature_engineering/`,
+see `FEATURE_DICTIONARY.md`), in two layers:
+`data/processed/features_raw.parquet` (interpretable units) and
+`data/processed/features_model_ready.parquet` (winsorized + cross-
+sectionally rank-normalized). Phase 4/5 (`src/equity_ml/models/`,
+`src/equity_ml/backtest/`) now has a first working, real-data run — purged/
+embargoed expanding-window walk-forward training across benchmark and ML
+models, decile long/short backtesting, performance evaluation, and
+explainability — see `MODEL_DESIGN.md` for the design and `MODEL_REPORT.md`
+for what the first real run found. This is explicitly a **first pass**, not
+a finished research result; see `PLAN.md` for what's next.
 
 ## Repository layout
 
@@ -28,18 +39,20 @@ and `TASKS.md` for what's next.
 ├── reports/
 │   ├── data_validation/    # generated data-quality reports (gitignored; regenerate anytime)
 │   ├── data_processing/    # generated merge diagnostics (gitignored; regenerate anytime)
-│   └── feature_engineering/ # generated feature diagnostics (gitignored; feature_registry.json/.csv excepted)
+│   ├── feature_engineering/ # generated feature diagnostics (gitignored; feature_registry.json/.csv excepted)
+│   ├── modeling/           # generated walk-forward/IC diagnostics (gitignored; regenerate anytime)
+│   └── backtest/           # generated portfolio/performance diagnostics (gitignored; regenerate anytime)
 ├── scripts/                # runnable entry points (thin CLI wrappers)
 ├── src/
-│   ├── equity_ml/          # project infrastructure (config, logging, future pipeline)
-│   │   ├── data/           # WRDS connection + loading (placeholder)
+│   ├── equity_ml/          # project infrastructure (config, logging) + modeling/backtest pipelines
+│   │   ├── data/           # WRDS connection + loading (placeholder — future live pulls only)
 │   │   ├── features/       # (superseded by src/feature_engineering/)
-│   │   ├── models/         # model training/evaluation (placeholder)
-│   │   ├── backtest/       # backtesting (placeholder)
+│   │   ├── models/         # walk-forward model training (this phase — see MODEL_DESIGN.md)
+│   │   ├── backtest/       # portfolio construction + backtesting (this phase)
 │   │   └── utils/          # generic helpers
 │   ├── data_validation/    # schema/quality validation pipeline
 │   ├── data_processing/    # point-in-time merge pipeline
-│   └── feature_engineering/ # point-in-time feature engineering (this phase)
+│   └── feature_engineering/ # point-in-time feature engineering
 └── tests/                  # pytest suite (synthetic fixtures only, never real data)
 ```
 
@@ -67,9 +80,13 @@ make precommit      # run all pre-commit hooks against the whole repo
 
 ## Configuration
 
-- `configs/config.yaml` — project-level settings (paths, random seed).
-  Research parameters (date range, universe, rebalance frequency) are `null`
-  placeholders until the research design is finalized against real data.
+- `configs/config.yaml` — project-level settings (paths, random seed). Its
+  `research:` block (date range, universe, rebalance frequency) is left as
+  `null` placeholders deliberately: those decisions were made per-phase
+  instead, as hardcoded, documented defaults in each phase's own frozen
+  dataclass config (`FeatureConfig`, `MergeConfig`, `ModelConfig`,
+  `BacktestConfig`) — see `MODEL_DESIGN.md`'s "Confirmed decisions" for
+  where the modeling-relevant ones (horizon, universe) actually live.
 - `configs/logging.yaml` — standard-library `logging.dictConfig` setup;
   console + rotating file handler writing to `logs/` (gitignored).
 - `configs/data_sources.yaml` — WRDS library/table placeholders. **No table
@@ -208,6 +225,56 @@ combining CRSP `MthCap` ($ thousands) directly with a Compustat field ($
 millions) was off by ~1000x, and `liquidity_share_turnover` mixed `MthVol`
 (actual shares) with raw `ShrOut` (thousands of shares) the same way. Both
 are fixed, with regression tests in `tests/feature_engineering/test_units.py`.
+
+## Modeling and backtesting pipeline
+
+Once `data/processed/features_model_ready.parquet` exists (see above), train
+walk-forward models with:
+
+```bash
+python scripts/run_modeling.py
+# equivalently: python -m equity_ml.models
+```
+
+This builds a forward 1-month-return target from `ret_adj`, restricts to the
+`is_investable` universe, and runs purged/embargoed expanding-window walk-
+forward training (21 folds over 2005-2025 against the real panel) across
+three benchmarks (equal-weight, momentum-sort, Fama-MacBeth) and, by
+default, five scikit-learn estimators (Ridge, Lasso, ElasticNet,
+RandomForestRegressor, HistGradientBoostingRegressor), each
+hyperparameter-tuned per fold by validation-fold Information Coefficient.
+`MODEL_REPORT.md`'s first real run used a custom, smaller model set
+(excluding `RandomForestRegressor`) for compute-budget reasons — see its
+"Compute-scoping decisions" for why and what a full-default run costs.
+Writes `reports/modeling/` (out-of-sample predictions, IC series/summary,
+fold boundaries, validation results).
+
+Then backtest the resulting predictions with:
+
+```bash
+python scripts/run_backtest.py
+# equivalently: python -m equity_ml.backtest
+```
+
+This builds decile long/short, dollar-neutral portfolios from the
+out-of-sample predictions, applies the delisting-adjusted return
+(`ret_adj`), and computes turnover, transaction-cost-sensitivity, Sharpe/
+Sortino/drawdown, and a Fama-French-5-plus-momentum factor-exposure
+regression (alpha). Writes `reports/backtest/`.
+
+**See `MODEL_DESIGN.md`** for the full technical design (target
+construction, walk-forward/purge-embargo methodology, benchmark and ML
+models, hyperparameter tuning, portfolio construction, backtesting,
+performance evaluation, explainability) and the project owner's confirmed
+decisions on prediction horizon, universe, and how Phase 1-3's residual
+data-quality follow-ups are treated. **See `MODEL_REPORT.md`** for the
+durable record of the first real run's results, two real bugs found and
+fixed running against real (not synthetic-fixture) data, and this pass's
+explicit compute-scoping decisions — this is a first pass, not a finished
+research result. **See `MODEL_CARD.md`** for a compact, at-a-glance summary
+of the whole modeling system (objective, target, universe, methodology,
+leakage safeguards, limitations) if you don't need the full design/results
+narrative.
 
 ## WRDS raw-data notes
 

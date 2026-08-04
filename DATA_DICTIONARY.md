@@ -244,8 +244,8 @@ pipeline into `reports/data_validation/`. As of the last run:
    point-in-time name/CUSIP lookups on its own.
 
 None of the above have been silently resolved by this pipeline — see
-`reports/data_validation/summary.md` for the full findings and `TASKS.md`
-for what's deferred to later phases.
+`reports/data_validation/summary.md` for the full findings and `PLAN.md`'s
+"Still open" notes for what's deferred to later phases.
 
 ## Derived / engineered fields
 

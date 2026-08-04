@@ -1,10 +1,13 @@
 # Research Plan
 
 **Status:** Data ingestion, validation, point-in-time integration, and
-point-in-time feature engineering complete; modeling has not started.
-Nothing in this document should be read as a research result — it is a plan
-of phases, and Phases 1-3's findings are data *quality*/*integration*/
-*feature-construction* findings, not research findings.
+point-in-time feature engineering complete. Phase 4 (modeling) and Phase 5
+(backtesting) have a first working pass — see `MODEL_REPORT.md` for what
+was actually run and found; it is explicitly a first pass, not a finished
+research result or a model-selection decision. Nothing in this document
+should be read as a final research conclusion — it is a plan of phases, and
+every phase's findings so far are pipeline-correctness/first-look findings,
+not a validated trading strategy.
 
 ## Phase 0 — Infrastructure (done)
 
@@ -22,7 +25,7 @@ in `data/raw/`. Completed:
 - [x] Populated `DATA_DICTIONARY.md` from the inspected schema (not assumed).
 - [x] Wrote typed, exact-duplicate-free interim copies to `data/interim/`.
 
-Still open (see `TASKS.md` "Follow-ups identified by validation"):
+Still open:
 
 - [ ] Decide and document the sample period and universe filters in
       `configs/config.yaml` (currently `null` placeholders).
@@ -43,7 +46,7 @@ Still open (see `TASKS.md` "Follow-ups identified by validation"):
 - [x] Resolved `crsp_monthly_stock`'s conflicting-duplicate-key rows (a
       documented, deterministic rule — see `MERGE_REPORT.md`).
 
-Still open (see `TASKS.md`'s follow-ups):
+Still open:
 
 - [ ] Decide and document the sample period and universe filters in
       `configs/config.yaml` (currently `null` placeholders) — the master
@@ -79,8 +82,8 @@ Still open (see `TASKS.md`'s follow-ups):
       with `mom_1m`; `is_investable` documentation strengthened to rule out
       "verified common-share"/named-index framing.
 
-Still open (see `TASKS.md`'s follow-ups and `FEATURE_DICTIONARY.md`'s
-"Requested features that could not be created"):
+Still open (see `FEATURE_DICTIONARY.md`'s "Requested features that
+could not be created" for detail on the first item):
 
 - [ ] Zero-return-frequency/LOT liquidity, dividend yield, ROIC, and the
       balance-sheet accrual method were not implemented — no daily data,
@@ -90,34 +93,66 @@ Still open (see `TASKS.md`'s follow-ups and `FEATURE_DICTIONARY.md`'s
       approximation, not a precise share-code-based common-equity
       classification (the underlying fields don't exist in this extract).
 
-## Phase 4 — Modeling (TODO)
+## Phase 4 — Modeling (first pass done)
 
-- [ ] Define target/label construction, using
-      `data/processed/features_model_ready.parquet` (or
-      `features_raw.parquet`, if a different transform is wanted).
-- [ ] Define train/validation/test split methodology appropriate for panel
-      financial data (e.g. purged/embargoed walk-forward).
-- [ ] Implement in `src/equity_ml/models/`.
+- [x] Technical design document written (`MODEL_DESIGN.md`): target
+      construction, train/val/test methodology, walk-forward evaluation,
+      benchmark models, hyperparameter tuning, portfolio construction,
+      backtesting, performance evaluation, explainability, reporting.
+- [x] Blocking design decisions resolved by the project owner
+      (2026-08-03, see `MODEL_DESIGN.md`'s "Confirmed decisions"):
+      1-month prediction horizon with monthly rebalance; `is_investable`
+      accepted as the modeling universe with no additional filter; residual
+      Phase 1-3 data-quality follow-ups explicitly deferred.
+- [x] Implemented `src/equity_ml/models/`: target/label construction
+      (`targets.py`), purged/embargoed expanding-window walk-forward splits
+      (`splits.py`), benchmarks (`baselines.py`) + ML estimators
+      (`estimators.py`), hyperparameter tuning by validation-fold IC
+      (`tuning.py`), walk-forward training orchestration (`training.py`),
+      leakage/consistency validation (`validation.py`), IC/permutation-
+      importance diagnostics (`diagnostics.py`), reporting, pipeline, CLI.
+      253 tests total in the repo (65 new this phase, all against synthetic
+      fixtures) — see `tests/models/`.
+- [x] First real run against the full panel: 21 walk-forward folds,
+      2005-2025 out-of-sample, 7 models (3 benchmarks + 4 ML estimators) —
+      see `MODEL_REPORT.md` for full results, two real bugs found and fixed
+      running against real data, and this pass's explicit compute-scoping
+      decisions (e.g. `random_forest` excluded from this run — too slow at
+      this panel's size with its default hyperparameters, though fully
+      implemented and tested).
 
-## Phase 5 — Backtesting & evaluation (TODO)
+## Phase 5 — Backtesting & evaluation (first pass done)
 
-- [ ] Define backtest methodology (transaction costs, turnover constraints,
-      rebalance frequency).
-- [ ] Implement in `src/equity_ml/backtest/`.
+- [x] Backtest methodology defined and implemented in
+      `src/equity_ml/backtest/`: decile long/short portfolio construction
+      (`portfolio.py`), turnover/transaction-cost engine using the
+      delisting-adjusted return (`engine.py`), Sharpe/Sortino/drawdown/
+      IC/factor-exposure performance evaluation (`performance.py`),
+      reporting, pipeline, CLI — see `MODEL_DESIGN.md` Sections 6-8 for the
+      design and `MODEL_REPORT.md` for the first real results (net-of-cost
+      Sharpe, cost sensitivity, alpha vs. Fama-French 5 + momentum).
+- [ ] Sector-neutral and score-weighted portfolio variants (both supported
+      by `BacktestConfig` flags) were not run in the first pass.
 
-## Phase 6 — Reporting (TODO)
+## Phase 6 — Reporting (first pass done)
 
-- [ ] Generate figures/tables into `reports/` from code, not by hand.
+- [x] `MODEL_REPORT.md` — the durable, git-tracked record of Phase 4/5's
+      first real run, generated from code-produced diagnostics
+      (`reports/modeling/`, `reports/backtest/`), matching
+      `MERGE_REPORT.md`/`UNIT_AUDIT_REPORT.md`'s convention.
+- [ ] Figures (cumulative return curves, IC time series, importance charts)
+      are not yet generated as images — only CSV/Markdown tables so far.
 
-## Open questions (to resolve before Phase 4)
+## Open questions (resolved before Phase 4 implementation began)
 
-- What is the target universe (e.g. all US common equities, an index
-  subset)? Neither the master panel nor the feature panels are filtered to
-  a particular universe (share code, exchange, etc.) — `is_investable` is
-  only an approximation (see `FEATURE_DICTIONARY.md`).
-- What is the intended prediction horizon and rebalance frequency?
-- How should the residual data-quality/integration issues from Phases 1-2,
-  and the not-yet-implemented features from Phase 3, be resolved (see
-  `TASKS.md`)?
+- **Target universe:** `is_investable` as currently defined, no additional
+  restriction — confirmed by the project owner 2026-08-03. It remains only
+  an approximation (see `FEATURE_DICTIONARY.md`), accepted as such.
+- **Prediction horizon and rebalance frequency:** 1 month, monthly rebalance
+  — confirmed 2026-08-03.
+- **Residual data-quality/integration issues from Phases 1-2, and
+  not-yet-implemented features from Phase 3:** explicitly deferred, carried
+  forward with their existing documented handling — confirmed 2026-08-03.
 
-These are intentionally unanswered — do not guess at them.
+See `MODEL_DESIGN.md`'s "Confirmed decisions" section for the full
+reasoning behind each.

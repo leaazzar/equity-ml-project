@@ -34,8 +34,8 @@ def main() -> int:
     setup_logging()
     parse_args()
     logger.error(
-        "WRDS download is not yet implemented. See TASKS.md and "
-        "configs/data_sources.yaml for the current TODOs."
+        "WRDS download is not yet implemented. See configs/data_sources.yaml "
+        "and src/equity_ml/data/wrds_loader.py."
     )
     return 1
 

@@ -10,4 +10,13 @@ source code.
   it is never committed; regenerate locally any time). See
   `DATA_DICTIONARY.md` for the durable, git-tracked summary of its findings.
 
-No feature/model reports exist yet — feature engineering has not started.
+- `feature_engineering/` — output of `scripts/run_feature_engineering.py`
+  (gitignored, except `feature_registry.json` — pure metadata, no licensed
+  data). See `FEATURE_DICTIONARY.md` for the durable, git-tracked summary.
+- `modeling/` — output of `scripts/run_modeling.py`: the out-of-sample
+  prediction panel, per-model Information Coefficient series/summary, fold
+  boundaries, and validation results (gitignored — regenerate locally). See
+  `MODEL_REPORT.md` for the durable, git-tracked summary.
+- `backtest/` — output of `scripts/run_backtest.py`: portfolio returns,
+  performance metrics, cost sensitivity, and factor-exposure regression
+  (gitignored — regenerate locally). See `MODEL_REPORT.md`.

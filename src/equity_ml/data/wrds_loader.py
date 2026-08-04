@@ -1,9 +1,12 @@
 """WRDS connection and data-loading scaffolding.
 
-STATUS: WRDS data has NOT been downloaded yet. The functions in this module
-are placeholders that define the intended interface only. Do not assume any
-table/field names or schemas until real WRDS access is provisioned and the
-actual schema has been inspected — see DATA_DICTIONARY.md and TASKS.md.
+STATUS: this module's live-connection code path has never been exercised.
+This project's raw extracts (see `data/README.md`) were supplied directly
+as CSV files, not pulled through here. The functions below are placeholders
+defining the intended interface for a future live WRDS pull — do not assume
+any table/field names or schemas beyond what's confirmed in
+`DATA_DICTIONARY.md` until real WRDS access is provisioned and the actual
+schema has been inspected against it.
 """
 
 from __future__ import annotations
@@ -45,9 +48,15 @@ def get_wrds_connection() -> wrds_module.Connection:
 
 def load_crsp_monthly(*_args: Any, **_kwargs: Any) -> pd.DataFrame:
     """TODO(WRDS): Implement once CRSP monthly access and schema are confirmed."""
-    raise NotImplementedError("WRDS data has not been downloaded yet. See TASKS.md.")
+    raise NotImplementedError(
+        "Live WRDS pulls are not implemented in this module; raw extracts were "
+        "supplied directly as CSV files instead. See data/README.md."
+    )
 
 
 def load_compustat_annual(*_args: Any, **_kwargs: Any) -> pd.DataFrame:
     """TODO(WRDS): Implement once Compustat annual access and schema are confirmed."""
-    raise NotImplementedError("WRDS data has not been downloaded yet. See TASKS.md.")
+    raise NotImplementedError(
+        "Live WRDS pulls are not implemented in this module; raw extracts were "
+        "supplied directly as CSV files instead. See data/README.md."
+    )

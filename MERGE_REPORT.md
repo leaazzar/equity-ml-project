@@ -140,7 +140,8 @@ well-documented source of bias in naive CRSP panels (Shumway, 1997).
   because `DelReasonType`'s exact code definitions are unconfirmed (see
   `DATA_DICTIONARY.md`) — applying a reason-dependent proxy would mean
   guessing at semantics this project hasn't verified. This is a decision to
-  revisit once those codes are confirmed (see `TASKS.md`).
+  revisit once those codes are confirmed (see `PLAN.md`'s "Still open" notes
+  and "Known limitations" below).
 - **Scope limit:** only the delisted security's own final return is
   adjusted. Returns are not chained into a successor security via
   `DelPERMNO` (a separate, more involved "return-splicing" methodology this
