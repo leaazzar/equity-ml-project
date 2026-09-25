@@ -2,7 +2,7 @@
 
 **No data is committed to this repository, and never will be.** CRSP,
 Compustat, and CCM data are licensed WRDS products this project has no
-right to redistribute — see `CLAUDE.md` and the root `.gitignore`. Every
+right to redistribute — see the root `.gitignore`. Every
 subdirectory here is gitignored except for a `.gitkeep` placeholder; clone
 this repo and all three will be empty until you populate them yourself with
 your own WRDS access.

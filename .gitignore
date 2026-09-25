@@ -137,3 +137,7 @@ reports/backtest/*
 # UNIT_AUDIT_REPORT.md, and PLAN.md are the public-facing docs and remain
 # tracked). Keep editing it locally; it just never gets committed.
 TASKS.md
+
+# --- Local assistant config (not part of the project) ---
+CLAUDE.md
+AGENTS.md
