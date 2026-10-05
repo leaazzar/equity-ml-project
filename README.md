@@ -20,19 +20,23 @@ root are worth reading if you want the reasoning and not just the code.
 Out-of-sample, 2005–2025 (21 annual walk-forward folds), decile long/short,
 net of 10 bps one-way costs:
 
-| Model | Mean IC | IC t-stat | Ann. return | Sharpe | Max drawdown |
-| --- | --- | --- | --- | --- | --- |
-| Fama-MacBeth | 0.023 | 4.50 | 15.5% | 1.01 | -46% |
-| Ridge | 0.020 | 3.97 | 12.5% | 0.89 | -37% |
-| Gradient boosting | 0.030 | 5.53 | 15.6% | 0.69 | -72% |
-| Elastic net | 0.026 | 4.56 | 10.6% | 0.63 | -54% |
-| Lasso | 0.025 | 4.40 | 10.1% | 0.60 | -54% |
-| Momentum sort | 0.043 | 4.82 | 10.2% | 0.48 | -74% |
+| Model | Mean IC | IC t-stat | Ann. return | Sharpe | Max drawdown | Ann. alpha (t) |
+| --- | --- | --- | --- | --- | --- | --- |
+| Fama-MacBeth | 0.023 | 4.50 | 15.5% | 1.01 | -46% | 14.3% (3.76) |
+| Ridge | 0.020 | 3.97 | 12.5% | 0.89 | -37% | 12.2% (3.43) |
+| Gradient boosting | 0.030 | 5.53 | 15.6% | 0.69 | -72% | 15.8% (2.83) |
+| Elastic net | 0.026 | 4.56 | 10.6% | 0.63 | -54% | 11.3% (2.49) |
+| Lasso | 0.025 | 4.40 | 10.1% | 0.60 | -54% | 10.6% (2.31) |
+| Momentum sort | 0.043 | 4.82 | 10.2% | 0.48 | -74% | 9.2% (1.55) |
 
 The most interesting result to me: gradient boosting had the most consistent
 signal (highest IC t-stat), but the simple linear models turned their weaker
 signal into better risk-adjusted returns because their portfolios were much
 less volatile. Signal quality and portfolio performance don't always agree.
+
+Alpha is from a regression on the Fama-French five factors plus momentum,
+with Newey-West t-stats in parentheses, so the returns aren't just
+repackaged exposure to known factors.
 
 This is a first pass, not a finished strategy. Random forest was left out for
 compute reasons, costs are a flat placeholder, and only ~13% of investable

@@ -63,9 +63,8 @@ data-quality follow-ups explicitly deferred.
 - **`RandomForestRegressor` excluded.** Benchmarked directly against the
   real complete-case sample before running: a *single* fit at
   `n_estimators=300` (the design's default) took **165.8 seconds** at the
-  full ~313K-row sample (18.5s at 50K rows, 65.5s at 150K rows — see the
-  timing benchmark in this session's history). A full grid search
-  (18 candidates) across 21 folds at that cost would run for hours, not
+  full ~313K-row sample (18.5s at 50K rows, 65.5s at 150K rows). A full
+  grid search (18 candidates) across 21 folds at that cost would run for hours, not
   minutes. `HistGradientBoostingRegressor` — the same fit taking **0.5
   seconds** at full size — serves as this run's tree-ensemble
   representative. `random_forest` remains in `estimators.DEFAULT_ESTIMATORS`
@@ -169,15 +168,18 @@ so cost has little room to bite, but it only ever subtracts).
 
 ### Factor-exposure regression (alpha vs. Fama-French 5 + momentum)
 
-| Model | Alpha (monthly) | Alpha t-stat | R² |
-| --- | --- | --- | --- |
-| hist_gradient_boosting | 0.0132 | 2.83 | 0.037 |
-| fama_macbeth | 0.0119 | 3.76 | 0.079 |
-| ridge | 0.0102 | 3.43 | 0.103 |
-| elastic_net | 0.0094 | 2.49 | 0.090 |
-| lasso | 0.0088 | 2.31 | 0.090 |
-| momentum_sort | 0.0077 | 1.55 | 0.047 |
-| equal_weight | -0.0021 | -1.81 | 0.032 |
+Alpha t-statistics use Newey-West (HAC) standard errors. Annualized alpha
+is monthly alpha x 12.
+
+| Model | Alpha (monthly) | Alpha (annualized) | Alpha t-stat (Newey-West) | R² |
+| --- | --- | --- | --- | --- |
+| hist_gradient_boosting | 0.0132 | 15.8% | 2.83 | 0.037 |
+| fama_macbeth | 0.0119 | 14.3% | 3.76 | 0.079 |
+| ridge | 0.0102 | 12.2% | 3.43 | 0.103 |
+| elastic_net | 0.0094 | 11.3% | 2.49 | 0.090 |
+| lasso | 0.0088 | 10.6% | 2.31 | 0.090 |
+| momentum_sort | 0.0077 | 9.2% | 1.55 | 0.047 |
+| equal_weight | -0.0021 | -2.5% | -1.81 | 0.032 |
 
 Every ML/Fama-MacBeth model has a statistically significant positive alpha
 (t > 2.3) against the known factors — the return isn't just a repackaged
